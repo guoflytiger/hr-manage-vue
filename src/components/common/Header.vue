@@ -38,9 +38,7 @@
                         <i class="el-icon-caret-bottom"></i>
                     </span>
                     <el-dropdown-menu slot="dropdown">
-                        <a href="https://github.com/lin-xin/vue-manage-system" target="_blank">
-                            <el-dropdown-item>项目仓库</el-dropdown-item>
-                        </a>
+                        <el-dropdown-item>项目仓库</el-dropdown-item>
                         <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
@@ -53,7 +51,7 @@ import bus from '../common/bus';
 export default {
     data() {
         return {
-            collapse: false,
+            collapse: true,
             fullscreen: false,
             name: 'linxin',
             message: 2
@@ -61,16 +59,33 @@ export default {
     },
     computed: {
         username() {
-            let username = localStorage.getItem('ms_username');
-            return username ? username : this.name;
+            let json = window.sessionStorage.getItem('user');
+            if (true) {
+                let currentHr = JSON.parse(json);
+                return currentHr.name;
+            }
+            return 'default';
         }
     },
     methods: {
         // 用户名下拉菜单选择事件
         handleCommand(command) {
             if (command == 'loginout') {
-                localStorage.removeItem('ms_username');
-                this.$router.push('/login');
+                this.$confirm('此操作将注销登录,  是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.getRequest("/logout");
+                    window.sessionStorage.removeItem("user")
+                    this.$store.commit('initRoutes', []);
+                    this.$router.replace("/");
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消操作'
+                    });
+                });
             }
         },
         // 侧边栏折叠

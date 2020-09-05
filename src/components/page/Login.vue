@@ -21,7 +21,6 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm()">登录</el-button>
                 </div>
-                <p class="login-tips">Tips : 用户名和密码随便填。</p>
             </el-form>
         </div>
     </div>
@@ -32,8 +31,8 @@ export default {
     data: function() {
         return {
             loginForm: {
-                username: 'admin',
-                password: '123123',
+                username: '',
+                password: '',
             },
             rules: {
                 username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -50,9 +49,11 @@ export default {
                         this.loading = false;
                         if (resp) {
                             this.$store.commit('INIT_CURRENTHR', resp.obj);
-                            window.sessionStorage.setItem("user", JSON.stringify(resp.obj));
+                            if (resp.obj){
+                                window.sessionStorage.setItem("user", JSON.stringify(resp.obj));
+                            }
                             let path = this.$route.query.redirect;
-                            this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
+                            this.$router.replace((path == '/' || path == undefined) ? '/dashboard' : path);
                         }else{
                             this.vcUrl = '/verifyCode?time='+new Date();
                         }
@@ -64,7 +65,7 @@ export default {
                 }
             });
         },
-    },
+    }
 };
 </script>
 

@@ -9,6 +9,7 @@ import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
 import './assets/css/icon.css';
 import './components/common/directives';
 import 'babel-polyfill';
+import 'font-awesome/css/font-awesome.min.css'
 import {initMenu} from "./utils/menus";
 import store from './store'
 import {postRequest} from "./utils/api";
@@ -33,7 +34,9 @@ const i18n = new VueI18n({
 });
 
 router.beforeEach((to, from, next) => {
-    if (to.path == '/') {
+    if (to.path == '/login' && window.sessionStorage.getItem("user")) {
+        window.sessionStorage.removeItem("user")
+        getRequest("/logout");
         next();
     } else {
         if (window.sessionStorage.getItem("user")) {
@@ -41,9 +44,7 @@ router.beforeEach((to, from, next) => {
             next();
         } else {
             next();
-            // next('/?redirect=' + to.path);
         }
-        // next('/?redirect=' + to.path);
     }
 })
 

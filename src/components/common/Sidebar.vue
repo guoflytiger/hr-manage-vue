@@ -1,48 +1,5 @@
 <template>
     <div class="sidebar">
-        <!-- <el-menu
-            class="sidebar-el-menu"
-            :default-active="onRoutes"
-            :collapse="collapse"
-            background-color="#324157"
-            text-color="#bfcbd9"
-            active-text-color="#20a0ff"
-            unique-opened
-            router
-        >
-            <el-submenu>
-                <template slot="title">
-                    <i class="el-icon-lx-home"></i>
-                    <span slot="title">个人管理</span>
-                </template>
-                <el-menu-item index="empInfo">个人信息维护</el-menu-item>
-                <el-menu-item index="empAccount">个人账户管理</el-menu-item>
-                <el-menu-item index="transferOpt">转账业务</el-menu-item>
-                <el-menu-item index="transferRecoard">转账记录</el-menu-item>
-            </el-submenu>
-            <el-submenu>
-                <template slot="title">
-                    <i class="el-icon-lx-cascades"></i>
-                    <span>部门管理</span>
-                </template>
-                <el-menu-item>部门架构管理</el-menu-item>
-            </el-submenu>
-            <el-submenu>
-                <template slot="title">
-                    <i class="el-icon-lx-home"></i>
-                    <span slot="title">员工管理</span>
-                </template>
-                <el-menu-item index="main">员工基本信息</el-menu-item>
-            </el-submenu>
-            <el-submenu>
-                <template slot="title">
-                    <i class="el-icon-lx-home"></i>
-                    <span slot="title">账户管理</span>
-                </template>
-                <el-menu-item index="main">账号信息管理</el-menu-item>
-                <el-menu-item index="main">转账记录查询</el-menu-item>
-            </el-submenu>
-        </el-menu> -->
         <el-menu router unique-opened class="sidebar-el-menu" :default-active="onRoutes" background-color="#324157" text-color="#bfcbd9" active-text-color="#20a0ff">
             <el-submenu :index="index+''" v-for="(item,index) in routes" v-if="!item.hidden" :key="index">
                 <template slot="title">

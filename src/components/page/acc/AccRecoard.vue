@@ -3,21 +3,19 @@
     <div class="crumbs">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item>
-          <i class="el-icon-lx-cascades"></i> 个人转账记录
+          <i class="el-icon-lx-cascades"></i> 基础表格
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
     <div class="container">
         <div class="handle-box">
-            <el-select v-model="queryScope" placeholder="查询范围">
-              <el-option
-                v-for="item in queryState"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
-            <el-input v-model="query.name" placeholder="相关人" class="handle-input mr10"></el-input>
+            <el-button
+              type="primary"
+              icon="el-icon-delete"
+              class="handle-del mr10"
+              @click="delAllSelection"
+            >批量删除</el-button>
+            <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
             <el-date-picker
               v-model="query.beginDateScope"
               type="datetimerange"
@@ -25,26 +23,24 @@
               value-format="yyyy-MM-dd hh:mm:ss"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :default-time="['06:00:00', '20:00:00']">
+              >
             </el-date-picker>
-            <el-button style="margin-left:20px;" type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+            <el-button style="margin-left:15px;" type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
         </div>
         <el-table
-            v-loading="loading"
-            element-loading-text="拼命加载中"
-            element-loading-spinner="el-icon-loading"
-            element-loading-background="rgba(0, 0, 0, 0.8)"
             :data="transfers"
             border
             stripe
             class="table"
             ref="multipleTable"
             header-cell-class-name="table-header"
+            @selection-change="handleSelectionChange"
         >
+            <el-table-column type="selection" width="70" align="center"></el-table-column>
             <el-table-column  prop="id" label="ID" width="100" align="center"></el-table-column>
-            <el-table-column  prop="no" label="单号" width="180" align="center"></el-table-column>
-            <el-table-column  prop="fromName" label="转账人" width="160" align="center"></el-table-column>
-            <el-table-column  prop="toName" label="收款人" width="160" align="center"></el-table-column>
+            <el-table-column  prop="no" label="单号" width="160" align="center"></el-table-column>
+            <el-table-column  prop="fromName" label="转账人" width="120" align="center"></el-table-column>
+            <el-table-column  prop="toName" label="收款人" width="140" align="center"></el-table-column>
             <el-table-column  prop="amount" label="转账金额" width="160" align="center"></el-table-column>
             <el-table-column  prop="createTime" label="单据日期" width="160" align="center"></el-table-column>
             <el-table-column label="操作" width="180" align="center">
@@ -73,29 +69,13 @@
 </template>
 <script>
 export default {
-  name: 'transferRecoard',
+  name: 'accRecoard',
   data() {
     return {
-      loading: false,
-      queryScope: 'all',
-      queryState: [
-        {
-          value: 'in',
-          label: '转入'
-        },
-        {
-          value: 'out',
-          label: '转出'
-        },
-        {
-          value: 'all',
-          label: '所有'
-        }
-      ],
       transfers: [],
       hr: {},
       query: {
-        name: null,
+        name: '',
         pageIndex: 1,
         pageSize: 10,
         beginDateScope: [],
@@ -109,53 +89,20 @@ export default {
   created() {
   },
   mounted() {
-    this.initHr()
+    this.getData()
   },
   methods: {
-    initHr() {
-      this.loading = true
-      this.getRequest('/emp/info').then(resp => {
-        if (resp) {
-          this.hr = resp;
-        }
-        this.getData()
-        this.loading = false
-      })
-    },
     getData() {
-      this.loading = true
-      let url = '/emp/trsRed/page?page='+this.query.pageIndex+'&size='+this.query.pageSize;
+      let url = '/acc/recoard/page?page='+this.query.pageIndex+'&size='+this.query.pageSize;
       if (this.query.name) {
-        if (this.queryScope === 'in') {
-          // url += '&fromName=' + this.hr.name;
-          url += '&toName=' + this.query.name;
-        }else if(this.queryScope === 'out') {
-          url += '&fromName=' + this.query.name;
-          // url += '&toName=' + this.hr.name;
-        }else if (this.queryScope === 'all'){
-          url += '&fromName=' + this.query.name;
-          url += '&toName=' + this.query.name;
-        }
-      }else {
-        if (this.queryScope === 'in') {
-          url += '&toName=' + this.hr.name;
-        }else if(this.queryScope === 'out') {
-          url += '&fromName=' + this.hr.name;
-        }else if (this.queryScope === 'all'){
-          url += '&fromName=' + this.hr.name;
-          url += '&toName=' + this.hr.name;
-        }
+        url += '&name=' + this.query.name
       }
-      url += '&name=' + this.hr.name;
       if (this.query.beginDateScope) {
         url += '&beginDateScope=' + this.query.beginDateScope;
       }
       this.getRequest(url).then(resp => {
         this.transfers = resp.data
         this.pageTotal = resp.total
-        this.loading = false
-      }).catch(err => {
-        this.loading = false
       })
     },
     // 触发搜索按钮
@@ -163,24 +110,42 @@ export default {
       this.resetPage()
       this.getData()
     },
+    // 多选操作
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    delAllSelection() {
+      const length = this.multipleSelection.length;
+      let str = '';
+      this.multipleSelection.forEach(e => {
+        this.delList.push(e.id)
+      })
+      console.log(this.delList)
+      this.$confirm('确定要删除这些记录吗？', '提示', {
+        type: 'warning'
+      })
+      .then(() => {
+        this.getRequest('/acc/recoard/delByIds?delList=' + this.delList).then(resp => {
+          this.getData()
+          this.$message.success(e.msg)
+          this.multipleSelection = [];
+        }).catch(()=> {})
+      })
+      .catch(() => {});
+      
+    },
     handleDelRec(index, row){
-      this.loading = true
       // 二次确认删除
       this.$confirm('确定要删除记录吗？', '提示', {
         type: 'warning'
       })
       .then(() => {
-        this.deleteRequest('/emp/trsRed/del/'+row.id).then(resp => {
+        this.deleteRequest('/acc/recoard/del/'+row.id).then(resp => {
           this.getData()
           this.$message.success(e.msg)
-          this.loading = true
-        }).catch(()=> {
-          this.loading = false
-        })
+        }).catch(()=> {})
       })
-      .catch(() => {
-        this.loading = false
-      });
+      .catch(() => {});
     },
     // 分页导航
     handlePageChange(val) {
